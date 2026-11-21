@@ -17,6 +17,7 @@ mod pages;
 mod player;
 mod runtime;
 mod services;
+mod thumbnails;
 mod widgets;
 mod window;
 
@@ -37,6 +38,16 @@ fn main() -> glib::ExitCode {
             EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("flaneur=info")),
         )
         .init();
+
+    // The connectors bring rustls with two crypto providers (ring and aws-lc-rs), so rustls
+    // cannot pick one for clients built without an explicit provider (RustyPipe's, the
+    // thumbnails'): install ring, which every connector supports, for the whole process.
+    if rustls::crypto::ring::default_provider()
+        .install_default()
+        .is_err()
+    {
+        tracing::debug!("a rustls crypto provider was already installed");
+    }
 
     gio::resources_register_include!("flaneur.gresource").expect("the bundled resources are valid");
     if let Err(error) = gst::init() {

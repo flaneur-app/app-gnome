@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 using Gtk 4.0;
 
-// One item of the video grid: a fixed 16:9 thumbnail (images will be cropped to cover it) and
-// labels capped to its width. Until the image cache loads thumbnails, the frame shows the kind
-// of item.
+// One item of the video grid: a fixed 16:9 thumbnail (images are cropped to cover it), the
+// service it comes from, the title, the channel (a button to its page) and the views and date.
+// Until the thumbnail loads, the frame shows the kind of item.
 template $FlaneurVideoCard: Gtk.Box {
   orientation: vertical;
-  spacing: 6;
+  spacing: 4;
   width-request: 240;
   halign: center;
 
@@ -35,6 +35,16 @@ template $FlaneurVideoCard: Gtk.Box {
     }
 
     [overlay]
+    Gtk.Label service {
+      halign: start;
+      valign: start;
+
+      styles [
+        "service-badge",
+      ]
+    }
+
+    [overlay]
     Gtk.Label badge {
       halign: end;
       valign: end;
@@ -42,6 +52,16 @@ template $FlaneurVideoCard: Gtk.Box {
 
       styles [
         "duration-badge",
+      ]
+    }
+
+    [overlay]
+    Gtk.ProgressBar progress {
+      valign: end;
+      visible: false;
+
+      styles [
+        "watch-progress",
       ]
     }
   }
@@ -53,19 +73,26 @@ template $FlaneurVideoCard: Gtk.Box {
     lines: 2;
     ellipsize: end;
     max-width-chars: 24;
+    margin-top: 2;
 
     styles [
       "heading",
     ]
   }
 
-  Gtk.Label channel {
-    xalign: 0;
-    ellipsize: end;
-    max-width-chars: 24;
+  // Its action, win.show-channel, is set with its target when an item is bound.
+  Gtk.Button channel {
+    halign: start;
+
+    child: Gtk.Label channel_label {
+      xalign: 0;
+      ellipsize: end;
+      max-width-chars: 24;
+    };
 
     styles [
-      "dim-label",
+      "flat",
+      "channel-button",
       "caption",
     ]
   }

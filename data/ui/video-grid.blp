@@ -28,9 +28,20 @@ template $FlaneurVideoGrid: Adw.Bin {
       Gtk.StackPage {
         name: "empty";
 
-        child: Adw.StatusPage {
+        child: Adw.StatusPage empty_status {
           icon-name: "video-x-generic-symbolic";
           title: _("Nothing Here Yet");
+
+          child: Gtk.Button empty_button {
+            use-underline: true;
+            halign: center;
+            visible: false;
+
+            styles [
+              "pill",
+              "suggested-action",
+            ]
+          };
         };
       }
 

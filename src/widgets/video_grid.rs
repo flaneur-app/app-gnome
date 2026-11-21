@@ -37,6 +37,10 @@ mod imp {
         #[template_child]
         pub stack: TemplateChild<gtk::Stack>,
         #[template_child]
+        pub empty_status: TemplateChild<adw::StatusPage>,
+        #[template_child]
+        pub empty_button: TemplateChild<gtk::Button>,
+        #[template_child]
         pub error_status: TemplateChild<adw::StatusPage>,
         #[template_child]
         pub scrolled: TemplateChild<gtk::ScrolledWindow>,
@@ -54,6 +58,8 @@ mod imp {
             Self {
                 banner: TemplateChild::default(),
                 stack: TemplateChild::default(),
+                empty_status: TemplateChild::default(),
+                empty_button: TemplateChild::default(),
                 error_status: TemplateChild::default(),
                 scrolled: TemplateChild::default(),
                 grid_view: TemplateChild::default(),
@@ -140,17 +146,18 @@ mod imp {
             ));
             // Loads the next page when the end of the list comes within one screen, and when
             // the loaded items do not fill the view yet.
-            let adjustment = self.scrolled.vadjustment();
-            adjustment.connect_value_changed(glib::clone!(
-                #[weak]
-                obj,
-                move |_| obj.load_more_if_near_the_end()
-            ));
-            adjustment.connect_changed(glib::clone!(
-                #[weak]
-                obj,
-                move |_| obj.load_more_if_near_the_end()
-            ));
+            for adjustment in [self.scrolled.vadjustment(), self.scrolled.hadjustment()] {
+                adjustment.connect_value_changed(glib::clone!(
+                    #[weak]
+                    obj,
+                    move |_| obj.load_more_if_near_the_end()
+                ));
+                adjustment.connect_changed(glib::clone!(
+                    #[weak]
+                    obj,
+                    move |_| obj.load_more_if_near_the_end()
+                ));
+            }
             self.banner.connect_button_clicked(glib::clone!(
                 #[weak]
                 obj,
@@ -208,6 +215,45 @@ impl VideoGrid {
         }
     }
 
+    /// Lays the cards out in one row that scrolls sideways, for a strip under the player.
+    pub fn set_strip(&self) {
+        let imp = self.imp();
+        imp.grid_view.set_orientation(gtk::Orientation::Horizontal);
+        imp.grid_view.set_max_columns(1);
+        imp.scrolled
+            .set_policy(gtk::PolicyType::Automatic, gtk::PolicyType::Never);
+    }
+
+    /// What the empty state says, and an optional button: its label and the action it
+    /// activates.
+    pub fn set_empty_state(
+        &self,
+        title: &str,
+        description: Option<&str>,
+        button: Option<(&str, &str)>,
+    ) {
+        let imp = self.imp();
+        imp.empty_status.set_title(title);
+        imp.empty_status.set_description(description);
+        imp.empty_button.set_visible(button.is_some());
+        if let Some((label, action)) = button {
+            imp.empty_button.set_label(label);
+            imp.empty_button.set_action_name(Some(action));
+        }
+    }
+
+    /// The list shown, if any.
+    pub fn binding(&self) -> Option<ListBinding> {
+        self.imp().binding.borrow().clone()
+    }
+
+    /// Reloads the list from its first page.
+    pub fn refresh(&self) {
+        if let Some(binding) = self.binding() {
+            binding.refresh();
+        }
+    }
+
     /// Connects to `item-activated`.
     pub fn connect_item_activated<F: Fn(&Self, &ItemObject) + 'static>(
         &self,
@@ -231,7 +277,11 @@ impl VideoGrid {
             let state = state.borrow();
             !state.items.is_empty() && state.has_more && !state.loading && state.error.is_none()
         };
-        let adjustment = imp.scrolled.vadjustment();
+        let adjustment = if imp.grid_view.orientation() == gtk::Orientation::Horizontal {
+            imp.scrolled.hadjustment()
+        } else {
+            imp.scrolled.vadjustment()
+        };
         let remaining = adjustment.upper() - adjustment.value() - adjustment.page_size();
         if ready && remaining < adjustment.page_size() {
             binding.load_more();

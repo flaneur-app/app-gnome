@@ -143,7 +143,15 @@ template $FlaneurWindow: Adw.ApplicationWindow {
 
             child: Adw.ToolbarView {
               [top]
-              Adw.HeaderBar {}
+              Adw.HeaderBar {
+                [end]
+                Gtk.Button add_feed_button {
+                  icon-name: "list-add-symbolic";
+                  tooltip-text: _("Add Feed");
+                  action-name: "win.add-feed";
+                  visible: false;
+                }
+              }
 
               content: Gtk.Stack stack {
                 transition-type: crossfade;

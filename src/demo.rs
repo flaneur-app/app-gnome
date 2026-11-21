@@ -7,12 +7,13 @@
 
 use async_trait::async_trait;
 use flaneur_connector::{
-    Capabilities, Connector, Credentials, Error, FeedKind, Feeds, Player, Result, Search,
-    SearchFilters, SearchResult, ServiceInfo, Session, Support, Target,
+    Capabilities, ChannelTab, Channels, Connector, Credentials, Error, FeedKind, Feeds, Player,
+    Result, Search, SearchFilters, SearchResult, ServiceInfo, Session, Support, Target,
 };
 use flaneur_model::{
-    ChannelRef, ChannelSummary, Container, ContentFlags, Cursor, Item, ItemKind, ItemRef, Page,
-    Playable, Precision, Published, ReactionCounts, ServiceId, Stream, StreamKind, VideoCodec,
+    Channel, ChannelRef, ChannelSummary, Container, ContentFlags, Cursor, Item, ItemKind, ItemRef,
+    Page, Playable, Playlist, Precision, Published, ReactionCounts, ServiceId, Stream, StreamKind,
+    VideoCodec,
 };
 use url::Url;
 
@@ -39,6 +40,20 @@ impl DemoConnector {
         }
     }
 
+    /// The demo's one channel.
+    pub fn channel_ref() -> ChannelRef {
+        ChannelRef::new(ServiceId::new("demo"), "blender")
+    }
+
+    fn channel_summary() -> ChannelSummary {
+        ChannelSummary {
+            r#ref: Self::channel_ref(),
+            name: "Blender Foundation".into(),
+            avatars: Vec::new(),
+            verified: None,
+        }
+    }
+
     fn item(&self, index: usize) -> Item {
         let kind = if index % 7 == 3 {
             ItemKind::Live
@@ -58,16 +73,11 @@ impl DemoConnector {
             dimensions: None,
             duration: (kind == ItemKind::Video).then_some(52),
             published: Some(Published {
-                at: 1_288_000_000,
+                at: 1_288_000_000 - i64::try_from(index).unwrap_or_default() * 86_400,
                 precision: Precision::Day,
             }),
             scheduled_start: None,
-            channel: Some(ChannelSummary {
-                r#ref: ChannelRef::new(self.info.id.clone(), "blender"),
-                name: "Blender Foundation".into(),
-                avatars: Vec::new(),
-                verified: None,
-            }),
+            channel: Some(Self::channel_summary()),
             thumbnails: Vec::new(),
             views: u64::try_from(index).ok().map(|i| i * 1_234),
             reactions: ReactionCounts::default(),
@@ -101,6 +111,11 @@ impl Connector for DemoConnector {
         Capabilities {
             home: Support::Anonymous,
             search: Support::Anonymous,
+            channels: Support::Anonymous,
+            related: Support::Anonymous,
+            subscription_feed: Support::Local,
+            subscriptions_read: Support::Local,
+            subscriptions_write: Support::Local,
             ..Capabilities::default()
         }
     }
@@ -129,6 +144,48 @@ impl Connector for DemoConnector {
 
     fn search(&self) -> Option<&dyn Search> {
         Some(self)
+    }
+
+    fn channels(&self) -> Option<&dyn Channels> {
+        Some(self)
+    }
+}
+
+#[async_trait]
+impl Channels for DemoConnector {
+    async fn channel(&self, channel: &ChannelRef) -> Result<Channel> {
+        if *channel != Self::channel_ref() {
+            return Err(Error::NotFound);
+        }
+        Ok(Channel {
+            summary: Self::channel_summary(),
+            handle: None,
+            description: Some("Open movies made with Blender.".into()),
+            subscribers: None,
+            banners: Vec::new(),
+            subscribed: None,
+            web_url: None,
+        })
+    }
+
+    async fn items(
+        &self,
+        channel: &ChannelRef,
+        _tab: ChannelTab,
+        cursor: Option<&Cursor>,
+    ) -> Result<Page<Item>> {
+        if *channel != Self::channel_ref() {
+            return Err(Error::NotFound);
+        }
+        self.page(cursor)
+    }
+
+    async fn playlists(
+        &self,
+        _channel: &ChannelRef,
+        _cursor: Option<&Cursor>,
+    ) -> Result<Page<Playlist>> {
+        Ok(Page::last(Vec::new()))
     }
 }
 
@@ -162,8 +219,11 @@ impl Player for DemoConnector {
         })
     }
 
-    async fn related(&self, _item: &ItemRef, _cursor: Option<&Cursor>) -> Result<Page<Item>> {
-        Ok(Page::last(Vec::new()))
+    async fn related(&self, item: &ItemRef, _cursor: Option<&Cursor>) -> Result<Page<Item>> {
+        let index: usize = item.id.parse().map_err(|_| Error::NotFound)?;
+        Ok(Page::last(
+            (index + 1..index + 7).map(|i| self.item(i)).collect(),
+        ))
     }
 }
 

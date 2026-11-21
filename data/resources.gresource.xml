@@ -7,6 +7,7 @@
     <file compressed="true" preprocess="xml-stripblanks">ui/feed-page.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/search-page.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/accounts-page.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/channel-page.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/video-grid.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/video-card.ui</file>
     <file compressed="true" preprocess="xml-stripblanks">ui/player-page.ui</file>
