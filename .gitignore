@@ -5,3 +5,9 @@
 cookies.txt
 *.cookies
 .env
+# Flatpak builds
+/.flatpak-builder
+/build-dir
+/flatpak_app
+/repo
+*.flatpak

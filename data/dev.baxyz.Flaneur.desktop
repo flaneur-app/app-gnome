@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+[Desktop Entry]
+Type=Application
+Name=Flâneur
+GenericName=Video Client
+Comment=Wander your favorite video platforms from one fast, open app
+Exec=flaneur
+Icon=dev.baxyz.Flaneur
+Terminal=false
+Categories=AudioVideo;Video;Player;GTK;GNOME;
+Keywords=video;player;subscriptions;feed;channels;
+StartupNotify=true

@@ -1,0 +1,59 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Development Flatpak of Flâneur, built from this checkout. CI builds it on every push and
+# uploads the bundle; on a machine with flatpak-builder:
+#
+#   flatpak-builder --user --install-deps-from=flathub --force-clean --install \
+#     build-dir build-aux/dev.baxyz.Flaneur.Devel.yml
+#
+# The app id ends in .Devel so a development build installs next to a stable one.
+id: dev.baxyz.Flaneur.Devel
+runtime: org.gnome.Platform
+runtime-version: "51"
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: flaneur
+finish-args:
+  # Video services.
+  - --share=network
+  # Display: Wayland, with X11 only where Wayland is missing; IPC is needed by X11.
+  - --share=ipc
+  - --socket=wayland
+  - --socket=fallback-x11
+  # GPU rendering and hardware video decoding (VA-API).
+  - --device=dri
+  # Sound (PulseAudio protocol, served by PipeWire on current desktops).
+  - --socket=pulseaudio
+  # No filesystem access: the app reads and writes only its own sandboxed data.
+build-options:
+  append-path: /usr/lib/sdk/rust-stable/bin
+  env:
+    CARGO_HOME: /run/build/flaneur/cargo
+    FLANEUR_APP_ID: dev.baxyz.Flaneur.Devel
+modules:
+  - name: flaneur
+    buildsystem: simple
+    build-options:
+      # cargo downloads the crates and the core repository during the build. That suits CI and
+      # local builds; a Flathub submission needs offline sources instead: a cargo-sources.json
+      # generated from Cargo.lock by flatpak-cargo-generator (flatpak-builder-tools), with
+      # `cargo --offline`.
+      build-args:
+        - --share=network
+    build-commands:
+      # The SDK extension may lag behind the toolchain pinned in rust-toolchain.toml (which
+      # flatpak-builder does not use); the code builds with it, so ignore the crates'
+      # rust-version.
+      - cargo build --release --locked --ignore-rust-version
+      - build-aux/install.sh /app "$FLATPAK_ID"
+    sources:
+      - type: dir
+        path: ..
+        # Build outputs of cargo, flatpak-builder and the CI action.
+        skip:
+          - target
+          - .flatpak-builder
+          - build-dir
+          - flatpak_app
+          - repo
