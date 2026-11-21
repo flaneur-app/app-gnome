@@ -6,7 +6,8 @@ This repository inherits the [canonical workspace rules](https://github.com/flan
 
 The GNOME app of [Flâneur](https://github.com/flaneur-app): a native GTK4/libadwaita client, packaged as a Flatpak. Screens, state and logic come from [`flaneur-app/core`](https://github.com/flaneur-app/core); this repository only holds the native GNOME interface.
 
-**Status:** early development: app shell, video grid and player; no connector registered yet.
+**Status:** early development: the YouTube, Odysee and RSS connectors are registered; no
+sign-in yet.
 
 This app is **not** a fork of [Pipeline](https://gitlab.com/schmiddi-on-mobile/pipeline) (see the
 Pipeline spike in `flaneur-app/spikes`). Pipeline may inspire layouts and behaviors, but never copy
@@ -60,12 +61,16 @@ src/
   main.rs               logging, resources, GStreamer init, run
   application.rs        AdwApplication: command line (--play, --audio), about dialog, actions
   window.rs             main window: navigation split view, sections, player navigation
-  services.rs           the connectors of this build (register new ones here); resolve()
-  lists.rs              ListBinding (a flaneur_vm::Paginator observed from GTK) and sources
+  services.rs           the connectors and the local database (SQLite); resolve(), resume
+  lists.rs              ListBinding (a flaneur_vm::Paginator observed from GTK); home and search
+                        merged across services, local subscriptions by date, history
   runtime.rs            the tokio runtime: network work never runs on the GTK thread
-  pages/                feed page (home, subscriptions, history), search, accounts
+  pages/                feed page (home, subscriptions, history), search, accounts, channel
+  thumbnails.rs         images downloaded and decoded off the GTK thread, in-memory cache
   widgets/              VideoGrid (GtkGridView over a ListStore of ItemObject), VideoCard
-  player/               Engine (playbin3 + gtk4paintablesink), PlayerPage, Media, decoders
+  player/               Engine (playbin3 + gtk4paintablesink), PlayerPage (related items,
+                        autoplay, resume), Media, decoders, proxy (chunked fetches for
+                        CDNs that refuse open-ended ranges)
   item_object.rs        flaneur_model::Item as a GObject
   format.rs             durations, counts and dates for display
   demo.rs               fake connector for tests and the `demo` feature
