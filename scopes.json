@@ -1,0 +1,12 @@
+[
+  "ui",
+  "player",
+  "flatpak",
+  "i18n",
+  "docs",
+  "deps",
+  "ci",
+  "ai",
+  "build",
+  "test"
+]
