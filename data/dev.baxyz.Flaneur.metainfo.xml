@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<component type="desktop-application">
+  <id>dev.baxyz.Flaneur</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>AGPL-3.0-or-later</project_license>
+  <name>Flâneur</name>
+  <summary>Wander your video platforms</summary>
+  <description>
+    <p>
+      Flâneur is a fast, open, multi-service video client: your subscriptions and your history
+      on several video platforms, side by side, in one native app.
+    </p>
+    <ul>
+      <li>Home, subscriptions and history merged across services</li>
+      <li>Playback with hardware decoding when the GPU supports the codec</li>
+      <li>Accounts stay on your computer, in the system keyring</li>
+    </ul>
+    <p>
+      This is an early development version: service connectors come in upcoming releases.
+    </p>
+    <p>
+      Flâneur is an independent project. It is not affiliated with, endorsed by or sponsored by
+      any of the services it connects to; their names and trademarks belong to their owners.
+    </p>
+  </description>
+  <developer id="dev.baxyz">
+    <name>The Flâneur contributors</name>
+  </developer>
+  <launchable type="desktop-id">dev.baxyz.Flaneur.desktop</launchable>
+  <url type="homepage">https://flaneur.baxyz.dev</url>
+  <url type="bugtracker">https://github.com/flaneur-app/app-gnome/issues</url>
+  <url type="vcs-browser">https://github.com/flaneur-app/app-gnome</url>
+  <content_rating type="oars-1.1"/>
+  <branding>
+    <color type="primary" scheme_preference="light">#a8c3e0</color>
+    <color type="primary" scheme_preference="dark">#3a6ea5</color>
+  </branding>
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  <supports>
+    <control>pointing</control>
+    <control>keyboard</control>
+    <control>touch</control>
+  </supports>
+  <releases>
+    <release version="0.1.0" date="2026-11-21">
+      <description>
+        <p>First development version: the app shell, the video grid and the player.</p>
+      </description>
+    </release>
+  </releases>
+</component>
