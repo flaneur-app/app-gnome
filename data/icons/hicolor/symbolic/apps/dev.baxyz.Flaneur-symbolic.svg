@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!-- Symbolic variant of the app icon: the winding path and the play triangle, one color. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <path d="M2 14 C 4.5 14, 3.5 9.5, 6.5 9.5 S 8 5.5, 9.5 5.5" fill="none" stroke="#222222" stroke-width="2" stroke-linecap="round"/>
+  <path d="M9.5 1.5 L15 5.5 L9.5 9.5 Z" fill="#222222"/>
+</svg>

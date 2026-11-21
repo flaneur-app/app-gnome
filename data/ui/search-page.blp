@@ -1,0 +1,63 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+using Gtk 4.0;
+using Adw 1;
+
+template $FlaneurSearchPage: Adw.Bin {
+  child: Gtk.Box {
+    orientation: vertical;
+
+    Adw.Clamp {
+      maximum-size: 600;
+      margin-top: 12;
+      margin-bottom: 6;
+      margin-start: 12;
+      margin-end: 12;
+
+      child: Gtk.SearchEntry entry {
+        placeholder-text: _("Search videos");
+      };
+    }
+
+    Gtk.Stack stack {
+      vexpand: true;
+
+      Gtk.StackPage {
+        name: "no-service";
+
+        child: Adw.StatusPage {
+          icon-name: "system-search-symbolic";
+          title: _("No services connected yet");
+          description: _("Connect a service that offers search to find videos.");
+
+          child: Gtk.Button {
+            label: _("_Connect a Service");
+            use-underline: true;
+            halign: center;
+            action-name: "win.show-accounts";
+
+            styles [
+              "pill",
+              "suggested-action",
+            ]
+          };
+        };
+      }
+
+      Gtk.StackPage {
+        name: "start";
+
+        child: Adw.StatusPage {
+          icon-name: "system-search-symbolic";
+          title: _("Search Videos");
+          description: _("Results come from every connected service that offers search.");
+        };
+      }
+
+      Gtk.StackPage {
+        name: "results";
+
+        child: $FlaneurVideoGrid grid {};
+      }
+    }
+  };
+}

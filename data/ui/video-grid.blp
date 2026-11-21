@@ -1,0 +1,88 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+using Gtk 4.0;
+using Adw 1;
+
+template $FlaneurVideoGrid: Adw.Bin {
+  child: Gtk.Box {
+    orientation: vertical;
+
+    Adw.Banner banner {
+      button-label: _("Retry");
+    }
+
+    Gtk.Stack stack {
+      vexpand: true;
+      transition-type: crossfade;
+
+      Gtk.StackPage {
+        name: "loading";
+
+        child: Adw.Spinner {
+          halign: center;
+          valign: center;
+          width-request: 48;
+          height-request: 48;
+        };
+      }
+
+      Gtk.StackPage {
+        name: "empty";
+
+        child: Adw.StatusPage {
+          icon-name: "video-x-generic-symbolic";
+          title: _("Nothing Here Yet");
+        };
+      }
+
+      Gtk.StackPage {
+        name: "error";
+
+        child: Adw.StatusPage error_status {
+          icon-name: "network-offline-symbolic";
+          title: _("Could Not Load Videos");
+
+          child: Gtk.Button {
+            label: _("_Retry");
+            use-underline: true;
+            halign: center;
+            clicked => $on_retry() swapped;
+
+            styles [
+              "pill",
+            ]
+          };
+        };
+      }
+
+      Gtk.StackPage {
+        name: "items";
+
+        child: Gtk.ScrolledWindow scrolled {
+          hscrollbar-policy: never;
+
+          child: Gtk.GridView grid_view {
+            min-columns: 1;
+            max-columns: 6;
+            single-click-activate: true;
+
+            styles [
+              "video-grid",
+            ]
+          };
+        };
+      }
+    }
+
+    Gtk.Revealer more_revealer {
+      transition-type: slide_up;
+
+      child: Adw.Spinner {
+        halign: center;
+        margin-top: 6;
+        margin-bottom: 6;
+        width-request: 24;
+        height-request: 24;
+      };
+    }
+  };
+}

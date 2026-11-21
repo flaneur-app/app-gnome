@@ -1,0 +1,144 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+using Gtk 4.0;
+using Adw 1;
+
+template $FlaneurPlayerPage: Adw.NavigationPage {
+  title: _("Player");
+  tag: "player";
+
+  child: Adw.ToolbarView toolbar_view {
+    extend-content-to-top-edge: false;
+    extend-content-to-bottom-edge: false;
+
+    [top]
+    Adw.HeaderBar {
+      [end]
+      Gtk.Button {
+        icon-name: "view-fullscreen-symbolic";
+        tooltip-text: _("Fullscreen");
+        action-name: "player.fullscreen";
+      }
+    }
+
+    content: Gtk.Overlay {
+      styles [
+        "player-video",
+      ]
+
+      child: Gtk.GraphicsOffload {
+        black-background: true;
+
+        child: Gtk.Picture picture {
+          content-fit: contain;
+          hexpand: true;
+          vexpand: true;
+        };
+      };
+
+      [overlay]
+      Adw.Spinner buffering {
+        halign: center;
+        valign: center;
+        width-request: 48;
+        height-request: 48;
+        visible: false;
+      }
+
+      [overlay]
+      Adw.StatusPage error_status {
+        icon-name: "dialog-error-symbolic";
+        title: _("Cannot Play This Video");
+        visible: false;
+
+        styles [
+          "osd",
+        ]
+      }
+    };
+
+    [bottom]
+    Gtk.Box {
+      spacing: 6;
+      margin-start: 6;
+      margin-end: 6;
+      margin-top: 6;
+      margin-bottom: 6;
+
+      styles [
+        "player-controls",
+      ]
+
+      Gtk.Button play_button {
+        icon-name: "media-playback-start-symbolic";
+        tooltip-text: _("Play");
+        action-name: "player.toggle-play";
+        valign: center;
+
+        styles [
+          "flat",
+        ]
+      }
+
+      Gtk.Label position_label {
+        label: "0:00";
+
+        styles [
+          "time",
+          "caption",
+          "numeric",
+        ]
+      }
+
+      Gtk.Scale seek_scale {
+        hexpand: true;
+        valign: center;
+        draw-value: false;
+        sensitive: false;
+
+        accessibility {
+          label: _("Position");
+        }
+
+        adjustment: Gtk.Adjustment {
+          lower: 0;
+          upper: 1;
+          step-increment: 5;
+          page-increment: 30;
+        };
+      }
+
+      Gtk.Label duration_label {
+        label: "0:00";
+
+        styles [
+          "time",
+          "caption",
+          "numeric",
+        ]
+      }
+
+      Gtk.ScaleButton volume_button {
+        valign: center;
+        tooltip-text: _("Volume");
+        icons: [
+          "audio-volume-muted-symbolic",
+          "audio-volume-high-symbolic",
+          "audio-volume-low-symbolic",
+          "audio-volume-medium-symbolic",
+        ];
+
+        adjustment: Gtk.Adjustment {
+          lower: 0;
+          upper: 1;
+          step-increment: 0.05;
+          page-increment: 0.2;
+          value: 1;
+        };
+
+        styles [
+          "flat",
+        ]
+      }
+    }
+  };
+}

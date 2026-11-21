@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SPDX-License-Identifier: AGPL-3.0-or-later -->
+<!-- ui/*.ui are compiled from data/ui/*.blp by build.rs into OUT_DIR. -->
+<gresources>
+  <gresource prefix="/dev/baxyz/Flaneur">
+    <file compressed="true" preprocess="xml-stripblanks">ui/window.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/feed-page.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/search-page.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/accounts-page.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/video-grid.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/video-card.ui</file>
+    <file compressed="true" preprocess="xml-stripblanks">ui/player-page.ui</file>
+    <file compressed="true">style.css</file>
+    <!-- GTK looks up app icons under <resource base>/icons/<hicolor subdirectory>. -->
+    <file compressed="true" preprocess="xml-stripblanks" alias="icons/scalable/apps/dev.baxyz.Flaneur.svg">icons/hicolor/scalable/apps/dev.baxyz.Flaneur.svg</file>
+    <file compressed="true" preprocess="xml-stripblanks" alias="icons/symbolic/apps/dev.baxyz.Flaneur-symbolic.svg">icons/hicolor/symbolic/apps/dev.baxyz.Flaneur-symbolic.svg</file>
+  </gresource>
+</gresources>

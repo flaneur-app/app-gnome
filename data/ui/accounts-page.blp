@@ -1,0 +1,28 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+using Gtk 4.0;
+using Adw 1;
+
+template $FlaneurAccountsPage: Adw.Bin {
+  child: Gtk.Stack stack {
+    Gtk.StackPage {
+      name: "empty";
+
+      child: Adw.StatusPage {
+        icon-name: "system-users-symbolic";
+        title: _("No services connected yet");
+        description: _("This build of Flâneur ships no service connectors yet. They come in upcoming versions.");
+      };
+    }
+
+    Gtk.StackPage {
+      name: "services";
+
+      child: Adw.PreferencesPage {
+        Adw.PreferencesGroup services_group {
+          title: _("Services");
+          description: _("Sessions stay on this computer, in the system keyring.");
+        }
+      };
+    }
+  };
+}
