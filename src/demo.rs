@@ -55,6 +55,7 @@ impl DemoConnector {
             kind,
             title,
             description: None,
+            dimensions: None,
             duration: (kind == ItemKind::Video).then_some(52),
             published: Some(Published {
                 at: 1_288_000_000,
@@ -112,9 +113,9 @@ impl Connector for DemoConnector {
         Err(Error::Unsupported)
     }
 
-    fn sign_out(&self) {}
+    async fn sign_out(&self) {}
 
-    fn parse_url(&self, _url: &Url) -> Option<Target> {
+    fn parse_url(&self, _url: &str) -> Option<Target> {
         None
     }
 
@@ -149,12 +150,15 @@ impl Player for DemoConnector {
                 video_codec: Some(VideoCodec::H264),
                 hdr: Some(false),
                 audio: None,
+                label: Some("480p".into()),
             }],
             hls_manifest: None,
             dash_manifest: None,
             expires_at: None,
             start_at: None,
             tracking: None,
+            headers: Vec::new(),
+            handoff: None,
         })
     }
 

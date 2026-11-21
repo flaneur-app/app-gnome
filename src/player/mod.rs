@@ -107,6 +107,7 @@ mod tests {
             video_codec: None,
             hdr: None,
             audio: None,
+            label: None,
         }
     }
 
