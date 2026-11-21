@@ -60,7 +60,7 @@ src/
   main.rs               logging, resources, GStreamer init, run
   application.rs        AdwApplication: command line (--play, --audio), about dialog, actions
   window.rs             main window: navigation split view, sections, player navigation
-  services.rs           the connectors of this build: register new ones here
+  services.rs           the connectors of this build (register new ones here); resolve()
   lists.rs              ListBinding (a flaneur_vm::Paginator observed from GTK) and sources
   runtime.rs            the tokio runtime: network work never runs on the GTK thread
   pages/                feed page (home, subscriptions, history), search, accounts
