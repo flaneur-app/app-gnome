@@ -1,0 +1,28 @@
+# Builds the development Flatpak and uploads the bundle as the `flaneur-x86_64` artifact.
+# A workflow of its own, so it runs whatever happens to the shared Rust workflow.
+name: Flatpak
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  flatpak:
+    name: Flatpak
+    runs-on: ubuntu-latest
+    # flatpak-builder needs user namespaces for bubblewrap, hence the privileged container.
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-51
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v7
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: build-aux/dev.baxyz.Flaneur.Devel.yml
+          bundle: flaneur.flatpak
+          cache-key: flatpak-builder-${{ hashFiles('build-aux/dev.baxyz.Flaneur.Devel.yml', 'Cargo.lock') }}
