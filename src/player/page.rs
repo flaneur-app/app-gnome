@@ -171,8 +171,9 @@ glib::wrapper! {
 }
 
 impl PlayerPage {
-    /// Plays a media; the page shows `title` in its header.
-    pub fn load(&self, media: &Media, title: &str) {
+    /// Plays a media, sending `headers` with its HTTP requests; the page shows `title` in its
+    /// header.
+    pub fn load(&self, media: &Media, headers: &[(String, String)], title: &str) {
         let imp = self.imp();
         self.set_title(title);
         imp.error_status.set_visible(false);
@@ -189,7 +190,7 @@ impl PlayerPage {
             .engine
             .borrow()
             .as_ref()
-            .map(|engine| engine.load(media));
+            .map(|engine| engine.load(media, headers));
         match result {
             Some(Ok(live)) => {
                 imp.live.set(live);

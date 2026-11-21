@@ -16,6 +16,8 @@
 //! alternative to move to if the player ever needs to switch qualities mid-stream; for one fixed
 //! pair of streams, `suburi` keeps the pipeline simple.
 
+use std::sync::{Arc, Mutex, PoisonError};
+
 use gst::prelude::*;
 use gtk::gdk;
 use gtk::glib;
@@ -41,6 +43,8 @@ pub enum Event {
 pub struct Engine {
     playbin: gst::Element,
     paintable: gdk::Paintable,
+    /// HTTP headers of the current media, shared with the `source-setup` handler.
+    headers: Arc<Mutex<Vec<(String, String)>>>,
 }
 
 impl Engine {
@@ -67,7 +71,30 @@ impl Engine {
         };
         tracing::debug!(has_gl, "video sink ready");
         playbin.set_property("video-sink", &video_sink);
-        Ok(Self { playbin, paintable })
+
+        // Some services only serve streams to requests carrying their headers (a referer, a
+        // token). `source-setup` hands over every source element `playbin3` creates, for the
+        // video and the audio URI alike; HTTP sources (`souphttpsrc`) take them as
+        // `extra-headers`. Adaptive demuxers reuse the source's headers for their fragments.
+        let headers: Arc<Mutex<Vec<(String, String)>>> = Arc::default();
+        let shared = Arc::clone(&headers);
+        playbin.connect("source-setup", false, move |args| {
+            let source = args.get(1).and_then(|v| v.get::<gst::Element>().ok())?;
+            let headers = shared.lock().unwrap_or_else(PoisonError::into_inner);
+            if !headers.is_empty() && source.find_property("extra-headers").is_some() {
+                let mut extra = gst::Structure::new_empty("extra-headers");
+                for (name, value) in headers.iter() {
+                    extra.set(name.as_str(), value.as_str());
+                }
+                source.set_property("extra-headers", extra);
+            }
+            None
+        });
+        Ok(Self {
+            playbin,
+            paintable,
+            headers,
+        })
     }
 
     /// The paintable showing the video.
@@ -124,10 +151,15 @@ impl Engine {
         })
     }
 
-    /// Loads a media and starts playing it. Returns whether it is live (live sources do not
+    /// Loads a media and starts playing it, sending `headers` with its HTTP requests. Returns whether it is live (live sources do not
     /// preroll and must not be paused for buffering).
-    pub fn load(&self, media: &Media) -> Result<bool, gst::StateChangeError> {
+    pub fn load(
+        &self,
+        media: &Media,
+        headers: &[(String, String)],
+    ) -> Result<bool, gst::StateChangeError> {
         self.playbin.set_state(gst::State::Null)?;
+        *self.headers.lock().unwrap_or_else(PoisonError::into_inner) = headers.to_vec();
         let (uri, audio) = match media {
             Media::Uri(uri) => (uri.as_str(), None),
             Media::Split { video, audio } => (video.as_str(), Some(audio.as_str())),

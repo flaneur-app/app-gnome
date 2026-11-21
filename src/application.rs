@@ -143,7 +143,7 @@ impl FlaneurApplication {
                 None => Media::Uri(video),
             };
             if let Some(window) = self.active_window().and_downcast::<FlaneurWindow>() {
-                window.play(&media, &title);
+                window.play(&media, &[], &title);
             }
         }
         glib::ExitCode::SUCCESS
