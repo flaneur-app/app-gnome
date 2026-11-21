@@ -25,4 +25,5 @@ jobs:
         with:
           manifest-path: build-aux/dev.baxyz.Flaneur.Devel.yml
           bundle: flaneur.flatpak
+          artifact-name: flaneur-x86_64
           cache-key: flatpak-builder-${{ hashFiles('build-aux/dev.baxyz.Flaneur.Devel.yml', 'Cargo.lock') }}
