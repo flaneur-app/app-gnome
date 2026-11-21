@@ -58,86 +58,115 @@ template $FlaneurPlayerPage: Adw.NavigationPage {
 
     [bottom]
     Gtk.Box {
-      spacing: 6;
-      margin-start: 6;
-      margin-end: 6;
-      margin-top: 6;
-      margin-bottom: 6;
+      orientation: vertical;
 
-      styles [
-        "player-controls",
-      ]
-
-      Gtk.Button play_button {
-        icon-name: "media-playback-start-symbolic";
-        tooltip-text: _("Play");
-        action-name: "player.toggle-play";
-        valign: center;
+      Gtk.Box {
+        spacing: 6;
+        margin-start: 6;
+        margin-end: 6;
+        margin-top: 6;
+        margin-bottom: 6;
 
         styles [
-          "flat",
+          "player-controls",
         ]
-      }
 
-      Gtk.Label position_label {
-        label: "0:00";
+        Gtk.Button play_button {
+          icon-name: "media-playback-start-symbolic";
+          tooltip-text: _("Play");
+          action-name: "player.toggle-play";
+          valign: center;
 
-        styles [
-          "time",
-          "caption",
-          "numeric",
-        ]
-      }
-
-      Gtk.Scale seek_scale {
-        hexpand: true;
-        valign: center;
-        draw-value: false;
-        sensitive: false;
-
-        accessibility {
-          label: _("Position");
+          styles [
+            "flat",
+          ]
         }
 
-        adjustment: Gtk.Adjustment {
-          lower: 0;
-          upper: 1;
-          step-increment: 5;
-          page-increment: 30;
-        };
+        Gtk.Label position_label {
+          label: "0:00";
+
+          styles [
+            "time",
+            "caption",
+            "numeric",
+          ]
+        }
+
+        Gtk.Scale seek_scale {
+          hexpand: true;
+          valign: center;
+          draw-value: false;
+          sensitive: false;
+
+          accessibility {
+            label: _("Position");
+          }
+
+          adjustment: Gtk.Adjustment {
+            lower: 0;
+            upper: 1;
+            step-increment: 5;
+            page-increment: 30;
+          };
+        }
+
+        Gtk.Label duration_label {
+          label: "0:00";
+
+          styles [
+            "time",
+            "caption",
+            "numeric",
+          ]
+        }
+
+        Gtk.ScaleButton volume_button {
+          valign: center;
+          tooltip-text: _("Volume");
+
+          icons: [
+            "audio-volume-muted-symbolic",
+            "audio-volume-high-symbolic",
+            "audio-volume-low-symbolic",
+            "audio-volume-medium-symbolic",
+          ];
+
+          adjustment: Gtk.Adjustment {
+            lower: 0;
+            upper: 1;
+            step-increment: 0.05;
+            page-increment: 0.2;
+            value: 1;
+          };
+
+          styles [
+            "flat",
+          ]
+        }
       }
 
-      Gtk.Label duration_label {
-        label: "0:00";
+      // What plays next: the related items of the current one.
+      Gtk.Revealer related_revealer {
+        transition-type: slide_up;
 
-        styles [
-          "time",
-          "caption",
-          "numeric",
-        ]
-      }
+        child: Gtk.Box {
+          orientation: vertical;
 
-      Gtk.ScaleButton volume_button {
-        valign: center;
-        tooltip-text: _("Volume");
-        icons: [
-          "audio-volume-muted-symbolic",
-          "audio-volume-high-symbolic",
-          "audio-volume-low-symbolic",
-          "audio-volume-medium-symbolic",
-        ];
+          Gtk.Label {
+            label: _("Up Next");
+            xalign: 0;
+            margin-start: 18;
+            margin-top: 6;
 
-        adjustment: Gtk.Adjustment {
-          lower: 0;
-          upper: 1;
-          step-increment: 0.05;
-          page-increment: 0.2;
-          value: 1;
+            styles [
+              "heading",
+            ]
+          }
+
+          $FlaneurVideoGrid related {
+            height-request: 236;
+          }
         };
-
-        styles [
-          "flat",
-        ]
       }
     }
   };

@@ -6,10 +6,7 @@
 //! `--audio URI` adds a separate audio stream played in sync, the way split streams of
 //! services play. A second invocation is forwarded to the running instance.
 
-use std::cell::OnceCell;
-
 use adw::prelude::*;
-use flaneur_vm::Registry;
 use gtk::{gio, glib};
 
 use crate::config;
@@ -17,14 +14,12 @@ use crate::player::Media;
 use crate::window::FlaneurWindow;
 
 mod imp {
-    use super::{FlaneurWindow, OnceCell, Registry, gio, glib};
+    use super::{FlaneurWindow, gio, glib};
     use adw::prelude::*;
     use adw::subclass::prelude::*;
 
     #[derive(Default)]
-    pub struct FlaneurApplication {
-        pub registry: OnceCell<Registry>,
-    }
+    pub struct FlaneurApplication {}
 
     #[glib::object_subclass]
     impl ObjectSubclass for FlaneurApplication {
@@ -81,8 +76,7 @@ mod imp {
                 window.present();
                 return;
             }
-            let registry = self.registry.get_or_init(crate::services::registry).clone();
-            FlaneurWindow::new(&app, registry).present();
+            FlaneurWindow::new(&app).present();
         }
 
         fn command_line(&self, command_line: &gio::ApplicationCommandLine) -> glib::ExitCode {
@@ -143,7 +137,7 @@ impl FlaneurApplication {
                 None => Media::Uri(video),
             };
             if let Some(window) = self.active_window().and_downcast::<FlaneurWindow>() {
-                window.play(&media, &[], &title);
+                window.play_uri(&media, &title);
             }
         }
         glib::ExitCode::SUCCESS

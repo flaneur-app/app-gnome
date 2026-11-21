@@ -2,8 +2,9 @@
 
 //! The accounts page: the services of this build and their session state.
 //!
-//! Signing in comes with the first connector that has accounts; sessions will live in the
-//! system keyring (the Secret portal in the Flatpak), never in a file of the app.
+//! Signing in comes in a later version; sessions will live in the system keyring (the Secret
+//! portal in the Flatpak), never in a file of the app. Services without accounts (RSS) keep
+//! their follows in the local database, and their row offers to add a feed.
 
 use adw::prelude::*;
 use flaneur_vm::Registry;
@@ -59,16 +60,26 @@ impl AccountsPage {
             any = true;
             let info = connector.info();
             let status = if info.auth_methods.is_empty() {
-                "No account needed"
+                "No account needed: follows stay on this computer"
             } else if connector.capabilities().signed_in {
                 "Signed in"
             } else {
-                "Not signed in"
+                "Works without an account; signing in comes in a later version"
             };
             let row = adw::ActionRow::builder()
                 .title(info.name.as_str())
                 .subtitle(status)
+                .use_markup(false)
                 .build();
+            if crate::lists::follows_locally(connector.as_ref()) {
+                let add = gtk::Button::builder()
+                    .label("_Add Feed")
+                    .use_underline(true)
+                    .valign(gtk::Align::Center)
+                    .action_name("win.add-feed")
+                    .build();
+                row.add_suffix(&add);
+            }
             imp.services_group.add(&row);
         }
         imp.stack

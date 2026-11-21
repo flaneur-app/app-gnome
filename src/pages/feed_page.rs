@@ -17,6 +17,8 @@ mod imp {
     #[template(resource = "/dev/baxyz/Flaneur/ui/feed-page.ui")]
     pub struct FeedPage {
         #[template_child]
+        pub notice: TemplateChild<adw::Banner>,
+        #[template_child]
         pub stack: TemplateChild<gtk::Stack>,
         #[template_child]
         pub no_service_status: TemplateChild<adw::StatusPage>,
@@ -69,6 +71,13 @@ impl FeedPage {
         } else {
             imp.stack.set_visible_child_name("no-service");
         }
+    }
+
+    /// A notice above the list, such as what needs sign-in; `None` hides it.
+    pub fn set_notice(&self, notice: Option<&str>) {
+        let imp = self.imp();
+        imp.notice.set_title(notice.unwrap_or_default());
+        imp.notice.set_revealed(notice.is_some());
     }
 
     /// The grid, to react to activated items.

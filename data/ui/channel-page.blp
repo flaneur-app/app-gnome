@@ -1,0 +1,76 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+using Gtk 4.0;
+using Adw 1;
+
+// A channel (or an RSS feed): its header and its videos.
+template $FlaneurChannelPage: Adw.NavigationPage {
+  title: _("Channel");
+
+  child: Adw.ToolbarView {
+    [top]
+    Adw.HeaderBar {
+      [end]
+      Gtk.Button follow_button {
+        visible: false;
+        clicked => $on_follow() swapped;
+      }
+    }
+
+    content: Gtk.Box {
+      orientation: vertical;
+
+      Adw.Clamp {
+        maximum-size: 900;
+
+        child: Gtk.Box {
+          spacing: 18;
+          margin-top: 12;
+          margin-bottom: 6;
+          margin-start: 18;
+          margin-end: 18;
+
+          Adw.Avatar avatar {
+            size: 72;
+            show-initials: true;
+          }
+
+          Gtk.Box {
+            orientation: vertical;
+            valign: center;
+            spacing: 4;
+
+            Gtk.Label name {
+              xalign: 0;
+              wrap: true;
+
+              styles [
+                "title-2",
+              ]
+            }
+
+            Gtk.Label details {
+              xalign: 0;
+              visible: false;
+
+              styles [
+                "dim-label",
+              ]
+            }
+
+            Gtk.Label description {
+              xalign: 0;
+              wrap: true;
+              lines: 3;
+              ellipsize: end;
+              visible: false;
+            }
+          }
+        };
+      }
+
+      $FlaneurVideoGrid grid {
+        vexpand: true;
+      }
+    };
+  };
+}

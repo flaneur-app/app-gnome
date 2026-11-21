@@ -1,19 +1,29 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-//! The player page: the video, and play/pause, seek, volume and fullscreen controls.
+//! The player page: the video, play/pause, seek, volume and fullscreen controls, and the related
+//! items under them.
 //!
 //! Keyboard: Space or K plays and pauses, Left and Right seek 10 seconds, F toggles
 //! fullscreen, Escape leaves it. In fullscreen the bars hide and come back on pointer motion.
+//!
+//! When the page plays an item of a service, it saves the position in the local database every
+//! 10 seconds, when playback stops and at the end, and emits `ended` at the end so the window
+//! can autoplay.
 
 use std::cell::{Cell, RefCell};
+use std::sync::OnceLock;
 use std::time::{Duration, Instant};
 
 use adw::prelude::*;
 use adw::subclass::prelude::*;
+use flaneur_model::{Item, Progress};
+use gtk::glib::subclass::Signal;
 use gtk::{CompositeTemplate, gdk, glib};
 
 use super::{Engine, Event, Media};
-use crate::format;
+use crate::lists::ListBinding;
+use crate::widgets::VideoGrid;
+use crate::{format, runtime, services};
 
 /// How often the position is refreshed.
 const TICK: Duration = Duration::from_millis(250);
@@ -23,9 +33,16 @@ const SEEK_GRACE: Duration = Duration::from_millis(600);
 const CONTROLS_TIMEOUT: Duration = Duration::from_secs(3);
 /// Step of the seek shortcuts, in seconds.
 const SEEK_STEP: i64 = 10;
+/// How often the position is saved while playing.
+const SAVE_EVERY: Duration = Duration::from_secs(10);
+/// Share of the duration after which an item counts as watched.
+const WATCHED_AT: f64 = 0.9;
 
 mod imp {
-    use super::{Cell, CompositeTemplate, Engine, Instant, RefCell, gdk, glib};
+    use super::{
+        Cell, CompositeTemplate, Engine, Instant, Item, OnceLock, RefCell, Signal, VideoGrid, gdk,
+        glib,
+    };
     use adw::prelude::*;
     use adw::subclass::prelude::*;
 
@@ -50,7 +67,16 @@ mod imp {
         pub duration_label: TemplateChild<gtk::Label>,
         #[template_child]
         pub volume_button: TemplateChild<gtk::ScaleButton>,
+        #[template_child]
+        pub related_revealer: TemplateChild<gtk::Revealer>,
+        #[template_child]
+        pub related: TemplateChild<VideoGrid>,
         pub engine: RefCell<Option<Engine>>,
+        /// The item playing, when it comes from a service.
+        pub item: RefCell<Option<Item>>,
+        /// Where to seek once the media is ready, in seconds.
+        pub start_at: Cell<Option<u64>>,
+        pub last_save: Cell<Option<Instant>>,
         pub bus_watch: RefCell<Option<gst::bus::BusWatchGuard>>,
         pub tick: RefCell<Option<glib::SourceId>>,
         pub wants_playing: Cell<bool>,
@@ -68,6 +94,7 @@ mod imp {
         type ParentType = adw::NavigationPage;
 
         fn class_init(klass: &mut Self::Class) {
+            VideoGrid::ensure_type();
             klass.bind_template();
             klass.install_action("player.toggle-play", None, |page, _, _| page.toggle_play());
             klass.install_action("player.fullscreen", None, |page, _, _| {
@@ -97,9 +124,16 @@ mod imp {
     }
 
     impl ObjectImpl for PlayerPage {
+        fn signals() -> &'static [Signal] {
+            static SIGNALS: OnceLock<Vec<Signal>> = OnceLock::new();
+            SIGNALS.get_or_init(|| vec![Signal::builder("ended").build()])
+        }
+
         fn constructed(&self) {
             self.parent_constructed();
             let obj = self.obj();
+            self.related.set_strip();
+            self.related.set_empty_state("Nothing Related", None, None);
 
             self.seek_scale.connect_change_value(glib::clone!(
                 #[weak]
@@ -172,9 +206,21 @@ glib::wrapper! {
 
 impl PlayerPage {
     /// Plays a media, sending `headers` with its HTTP requests; the page shows `title` in its
-    /// header.
-    pub fn load(&self, media: &Media, headers: &[(String, String)], title: &str) {
+    /// header. `item` is the item of a service being played (its position is saved), and
+    /// `start_at` where to start, in seconds.
+    pub fn load(
+        &self,
+        media: &Media,
+        headers: &[(String, String)],
+        title: &str,
+        item: Option<Item>,
+        start_at: Option<u64>,
+    ) {
         let imp = self.imp();
+        self.save_progress(false);
+        imp.item.replace(item);
+        imp.start_at.set(start_at.filter(|s| *s > 0));
+        imp.last_save.set(Some(Instant::now()));
         self.set_title(title);
         imp.error_status.set_visible(false);
         imp.buffering.set_visible(true);
@@ -244,10 +290,17 @@ impl PlayerPage {
                     .set_tooltip_text(Some(if playing { "Pause" } else { "Play" }));
                 if state >= gst::State::Paused {
                     imp.buffering.set_visible(false);
+                    if let Some(start) = imp.start_at.take()
+                        && let Some(engine) = imp.engine.borrow().as_ref()
+                    {
+                        tracing::info!(start, "resuming");
+                        engine.seek(gst::ClockTime::from_seconds(start));
+                    }
                     self.update_position();
                 }
             }
             Event::Buffering(percent) => {
+                tracing::debug!(percent, "buffering");
                 imp.buffering.set_visible(percent < 100);
                 // Live streams cannot pause; on-demand ones pause until the buffer is full.
                 if !imp.live.get()
@@ -262,6 +315,8 @@ impl PlayerPage {
                 if let Some(engine) = imp.engine.borrow().as_ref() {
                     engine.set_playing(false);
                 }
+                self.save_progress(true);
+                self.emit_by_name::<()>("ended", &[]);
             }
             Event::Error(message) => self.show_error(&message),
         }
@@ -310,6 +365,14 @@ impl PlayerPage {
         }
         let position = position.map_or(0, gst::ClockTime::seconds);
         tracing::trace!(position, "player position");
+        if imp.wants_playing.get()
+            && imp
+                .last_save
+                .get()
+                .is_none_or(|at| at.elapsed() >= SAVE_EVERY)
+        {
+            self.save_progress(false);
+        }
         imp.position_label.set_label(&format::duration(position));
         if let Some(duration) = duration.filter(|d| !d.is_zero()) {
             let seconds = duration.seconds();
@@ -430,6 +493,10 @@ impl PlayerPage {
         let imp = self.imp();
         imp.toolbar_view.set_reveal_top_bars(revealed);
         imp.toolbar_view.set_reveal_bottom_bars(revealed);
+        // The related items stay hidden in fullscreen, where only the controls come back.
+        let fullscreen = self.window().is_some_and(|w| w.is_fullscreen());
+        imp.related_revealer
+            .set_reveal_child(!fullscreen && imp.related.binding().is_some());
     }
 
     fn show_controls_for_a_while(&self) {
@@ -457,9 +524,89 @@ impl PlayerPage {
         imp.hide_controls.replace(Some(source));
     }
 
+    /// Shows the related items of the current one; `None` hides the strip.
+    pub fn set_related(&self, related: Option<&ListBinding>) {
+        let imp = self.imp();
+        if let Some(binding) = related {
+            imp.related.bind(binding);
+        }
+        imp.related_revealer.set_reveal_child(related.is_some());
+    }
+
+    /// The related items shown, if any.
+    pub fn related(&self) -> Option<ListBinding> {
+        self.imp().related.binding()
+    }
+
+    /// The related items' grid, to react to activated items.
+    pub fn related_grid(&self) -> VideoGrid {
+        self.imp().related.get()
+    }
+
+    /// The item playing, when it comes from a service.
+    pub fn item(&self) -> Option<Item> {
+        self.imp().item.borrow().clone()
+    }
+
+    /// Connects to `ended`, emitted at the end of the media.
+    pub fn connect_ended<F: Fn(&Self) + 'static>(&self, f: F) -> glib::SignalHandlerId {
+        self.connect_closure(
+            "ended",
+            false,
+            glib::closure_local!(move |page: &Self| f(page)),
+        )
+    }
+
+    /// Saves the position of the item playing in the local database, in the background.
+    fn save_progress(&self, ended: bool) {
+        let imp = self.imp();
+        let Some(item) = imp.item.borrow().clone() else {
+            return;
+        };
+        let Some(store) = services::get().store.clone() else {
+            return;
+        };
+        let Some((position, duration)) = imp
+            .engine
+            .borrow()
+            .as_ref()
+            .map(|e| (e.position(), e.duration()))
+        else {
+            return;
+        };
+        let duration = duration
+            .map(|d| u32::try_from(d.seconds()).unwrap_or(u32::MAX))
+            .filter(|d| *d > 0);
+        let position = match (ended, duration) {
+            (true, Some(duration)) => duration,
+            _ => position.map_or(0, |p| u32::try_from(p.seconds()).unwrap_or(u32::MAX)),
+        };
+        if position == 0 && !ended {
+            return;
+        }
+        imp.last_save.set(Some(Instant::now()));
+        let watched =
+            ended || duration.is_some_and(|d| f64::from(position) >= f64::from(d) * WATCHED_AT);
+        let progress = Progress {
+            position,
+            duration,
+            updated_at: services::now(),
+        };
+        runtime::spawn(async move {
+            if let Err(error) =
+                store
+                    .lock()
+                    .record_progress(&item.r#ref, Some(&item), progress, watched)
+            {
+                tracing::warn!(%error, "saving the position");
+            }
+        });
+    }
+
     /// Stops playback and leaves fullscreen; called when the page is closed.
     fn stop(&self) {
         let imp = self.imp();
+        self.save_progress(false);
         imp.wants_playing.set(false);
         if let Some(engine) = imp.engine.borrow().as_ref() {
             engine.stop();

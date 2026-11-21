@@ -25,6 +25,7 @@
 
 mod engine;
 mod page;
+mod proxy;
 
 use flaneur_model::VideoCodec;
 use flaneur_vm::Selection;
@@ -45,6 +46,28 @@ pub enum Media {
         /// Audio stream.
         audio: String,
     },
+}
+
+impl Media {
+    /// The same media, with the URLs of CDNs that only serve bounded ranges going through the
+    /// local chunking proxy (see [`proxy`]), which sends `headers` upstream.
+    #[must_use]
+    pub fn chunked(self, headers: &[(String, String)]) -> Self {
+        let route = |url: String| {
+            if proxy::needs_chunks(&url) {
+                proxy::register(&url, headers)
+            } else {
+                url
+            }
+        };
+        match self {
+            Self::Uri(uri) => Self::Uri(route(uri)),
+            Self::Split { video, audio } => Self::Split {
+                video: route(video),
+                audio: route(audio),
+            },
+        }
+    }
 }
 
 impl From<Selection<'_>> for Media {

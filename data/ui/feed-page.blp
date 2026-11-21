@@ -5,7 +5,14 @@ using Adw 1;
 // A feed (home, subscriptions, history): the video grid once a service provides the feed, an
 // empty state until then.
 template $FlaneurFeedPage: Adw.Bin {
-  child: Gtk.Stack stack {
+  child: Gtk.Box {
+    orientation: vertical;
+
+    Adw.Banner notice {}
+
+    Gtk.Stack stack {
+      vexpand: true;
+
     Gtk.StackPage {
       name: "no-service";
 
@@ -31,6 +38,7 @@ template $FlaneurFeedPage: Adw.Bin {
       name: "items";
 
       child: $FlaneurVideoGrid grid {};
+    }
     }
   };
 }
