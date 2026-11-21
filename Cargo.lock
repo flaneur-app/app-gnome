@@ -689,7 +689,7 @@ dependencies = [
 [[package]]
 name = "flaneur-connector"
 version = "0.0.0"
-source = "git+https://github.com/flaneur-app/core?branch=feat%2Fcore-structure#7c947a6670f259439d1ffbc20593af56f14cd521"
+source = "git+https://github.com/flaneur-app/core?branch=feat%2Fcore-structure#23d3caa7ebc6d95c40c1239bebf4304a714e70b9"
 dependencies = [
  "async-trait",
  "flaneur-model",
@@ -701,7 +701,7 @@ dependencies = [
 [[package]]
 name = "flaneur-connector-odysee"
 version = "0.1.0"
-source = "git+https://github.com/flaneur-app/connector-odysee?branch=feat%2Fodysee-connector#9d477d27d657909fbefb301ec1aecccea083604f"
+source = "git+https://github.com/flaneur-app/connector-odysee?branch=feat%2Fodysee-connector#715e6a1b759ebc13fc04d097d8043fcab40602aa"
 dependencies = [
  "async-trait",
  "flaneur-connector",
@@ -761,7 +761,7 @@ dependencies = [
 [[package]]
 name = "flaneur-model"
 version = "0.0.0"
-source = "git+https://github.com/flaneur-app/core?branch=feat%2Fcore-structure#7c947a6670f259439d1ffbc20593af56f14cd521"
+source = "git+https://github.com/flaneur-app/core?branch=feat%2Fcore-structure#23d3caa7ebc6d95c40c1239bebf4304a714e70b9"
 dependencies = [
  "serde",
  "url",
@@ -770,7 +770,7 @@ dependencies = [
 [[package]]
 name = "flaneur-store"
 version = "0.0.0"
-source = "git+https://github.com/flaneur-app/core?branch=feat%2Fcore-structure#7c947a6670f259439d1ffbc20593af56f14cd521"
+source = "git+https://github.com/flaneur-app/core?branch=feat%2Fcore-structure#23d3caa7ebc6d95c40c1239bebf4304a714e70b9"
 dependencies = [
  "flaneur-model",
  "rusqlite",
@@ -782,7 +782,7 @@ dependencies = [
 [[package]]
 name = "flaneur-vm"
 version = "0.0.0"
-source = "git+https://github.com/flaneur-app/core?branch=feat%2Fcore-structure#7c947a6670f259439d1ffbc20593af56f14cd521"
+source = "git+https://github.com/flaneur-app/core?branch=feat%2Fcore-structure#23d3caa7ebc6d95c40c1239bebf4304a714e70b9"
 dependencies = [
  "flaneur-connector",
  "flaneur-model",
