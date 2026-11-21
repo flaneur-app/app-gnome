@@ -13,4 +13,21 @@ jobs:
   rust:
     uses: flaneur-app/.github/.github/workflows/rust-ci.yml@main
     with:
-      system-packages: "libgtk-4-dev libadwaita-1-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libsqlite3-dev"
+      # build.rs needs blueprint-compiler and glib-compile-resources (libglib2.0-dev-bin, pulled
+      # in by libgtk-4-dev).
+      system-packages: "libgtk-4-dev libadwaita-1-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libsqlite3-dev blueprint-compiler"
+
+  flatpak:
+    name: Flatpak
+    runs-on: ubuntu-latest
+    # flatpak-builder needs user namespaces for bubblewrap, hence the privileged container.
+    container:
+      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-51
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v7
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          manifest-path: build-aux/dev.baxyz.Flaneur.Devel.yml
+          bundle: flaneur.flatpak
+          cache-key: flatpak-builder-${{ hashFiles('build-aux/dev.baxyz.Flaneur.Devel.yml', 'Cargo.lock') }}
