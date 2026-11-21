@@ -6,10 +6,20 @@ The GNOME app of [Flâneur](https://github.com/flaneur-app): a native GTK4/libad
 > sponsored by Google, YouTube, Odysee, LBRY or any other service it can connect to. All
 > trademarks belong to their owners.
 
-**Status:** early development. The app shell (sidebar, adaptive layout, empty states, about
-dialog), the video grid and the player work. No service connector is registered yet, so every
-page shows "No services connected yet"; `flaneur --play <uri>` plays any video URI to try the
-player.
+**Status:** early development, without accounts. What works:
+
+- **Home**: the home feeds of the services that have one without an account (Odysee today),
+  interleaved, each card showing its service.
+- **Search** across YouTube and Odysee, results interleaved.
+- **Subscriptions**: RSS and Atom feeds you follow (Add Feed takes a feed or a page that
+  advertises one), merged by date. Following YouTube and Odysee channels needs sign-in, which
+  comes later.
+- **History**: every video played in Flâneur, with resume positions, kept on this computer.
+- **Channel pages** from a card's channel name, with Follow for RSS feeds.
+- **Player**: the best streams the GPU can decode (1080p at most), resume, related items under
+  the video, autoplay of the next one, fullscreen, keyboard shortcuts.
+
+Known limits are listed in the pull requests; `flaneur --play <uri>` plays any video URI.
 
 ## Build and run in the dev container
 
@@ -44,15 +54,21 @@ Broadway has no GPU and no sound: judge the player on a real desktop.
 ## Try it on a GNOME desktop
 
 **Flatpak from CI (recommended).** Every CI run builds a development Flatpak,
-`dev.baxyz.Flaneur.Devel`, on the GNOME 51 runtime. Download the `flaneur-x86_64` artifact of a
-run from the [Actions tab](https://github.com/flaneur-app/app-gnome/actions) (or
-`gh run download RUN_ID -R flaneur-app/app-gnome -n flaneur-x86_64`), then:
+`dev.baxyz.Flaneur.Devel`, on the GNOME 51 runtime, and uploads it as the `flaneur-x86_64`
+artifact. Take it from the latest run of the
+[Flatpak workflow](https://github.com/flaneur-app/app-gnome/actions/workflows/flatpak.yml)
+(Artifacts, at the bottom of the run's page), or with `gh`:
 
 ```bash
-flatpak install --user ./flaneur.flatpak   # pulls the GNOME runtime from Flathub if needed
+run=$(gh run list -R flaneur-app/app-gnome -w Flatpak -L 1 --json databaseId -q '.[0].databaseId')
+gh run download "$run" -R flaneur-app/app-gnome -n flaneur-x86_64   # writes flaneur.flatpak
+flatpak install --user flaneur.flatpak    # pulls the GNOME runtime from Flathub if needed
 flatpak run dev.baxyz.Flaneur.Devel
-flatpak run dev.baxyz.Flaneur.Devel --play https://download.blender.org/durian/trailer/sintel_trailer-480p.mp4
 ```
+
+Installing a newer bundle replaces the previous one (`flatpak install --user --reinstall
+flaneur.flatpak` if Flatpak complains). The local database and the followed feeds stay in
+`~/.var/app/dev.baxyz.Flaneur.Devel/`.
 
 The development build installs next to a future stable `dev.baxyz.Flaneur` and has a striped
 header bar.
@@ -91,3 +107,8 @@ container lives in [`flaneur-app/.dev`](https://github.com/flaneur-app/.dev).
 ## License
 
 [AGPL-3.0-or-later](LICENSE).
+
+The YouTube connector uses [RustyPipe](https://codeberg.org/ThetaDev/rustypipe), which is
+GPL-3.0-only. The binary combines AGPL-3.0-or-later code with GPL-3.0-only code, which section 13
+of both licenses allows; it is distributed under the terms of both, and its source is this
+repository and the repositories it depends on.
