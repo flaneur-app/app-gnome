@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+using Gtk 4.0;
+using Adw 1;
+
+// A feed (home, subscriptions, history): the video grid once a service provides the feed, an
+// empty state until then.
+template $FlaneurFeedPage: Adw.Bin {
+  child: Gtk.Stack stack {
+    Gtk.StackPage {
+      name: "no-service";
+
+      child: Adw.StatusPage no_service_status {
+        icon-name: "dev.baxyz.Flaneur-symbolic";
+        title: _("No services connected yet");
+
+        child: Gtk.Button {
+          label: _("_Connect a Service");
+          use-underline: true;
+          halign: center;
+          action-name: "win.show-accounts";
+
+          styles [
+            "pill",
+            "suggested-action",
+          ]
+        };
+      };
+    }
+
+    Gtk.StackPage {
+      name: "items";
+
+      child: $FlaneurVideoGrid grid {};
+    }
+  };
+}

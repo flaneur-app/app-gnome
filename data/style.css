@@ -1,0 +1,42 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+
+/* Loaded automatically by GtkApplication from the resource base path. */
+
+gridview.video-grid {
+  padding: 12px;
+  background: none;
+}
+
+gridview.video-grid > child {
+  padding: 6px;
+  border-radius: 12px;
+}
+
+.thumbnail {
+  border-radius: 8px;
+  background-color: alpha(currentColor, 0.08);
+}
+
+.duration-badge {
+  margin: 6px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  background-color: rgb(0 0 0 / 75%);
+  color: white;
+  font-size: 0.85em;
+  font-weight: bold;
+  font-feature-settings: "tnum";
+}
+
+.duration-badge.live {
+  background-color: var(--destructive-bg-color, #c01c28);
+}
+
+.player-video {
+  background-color: black;
+}
+
+.player-controls label.time {
+  font-feature-settings: "tnum";
+  min-width: 4em;
+}

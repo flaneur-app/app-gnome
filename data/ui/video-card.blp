@@ -1,0 +1,83 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+using Gtk 4.0;
+
+// One item of the video grid: a fixed 16:9 thumbnail (images will be cropped to cover it) and
+// labels capped to its width. Until the image cache loads thumbnails, the frame shows the kind
+// of item.
+template $FlaneurVideoCard: Gtk.Box {
+  orientation: vertical;
+  spacing: 6;
+  width-request: 240;
+  halign: center;
+
+  Gtk.Overlay {
+    child: Gtk.Picture thumbnail {
+      width-request: 240;
+      height-request: 135;
+      content-fit: cover;
+      overflow: hidden;
+
+      styles [
+        "thumbnail",
+      ]
+    };
+
+    [overlay]
+    Gtk.Image placeholder {
+      icon-name: "video-x-generic-symbolic";
+      pixel-size: 32;
+      halign: center;
+      valign: center;
+
+      styles [
+        "dim-label",
+      ]
+    }
+
+    [overlay]
+    Gtk.Label badge {
+      halign: end;
+      valign: end;
+      visible: false;
+
+      styles [
+        "duration-badge",
+      ]
+    }
+  }
+
+  Gtk.Label title {
+    xalign: 0;
+    wrap: true;
+    wrap-mode: word_char;
+    lines: 2;
+    ellipsize: end;
+    max-width-chars: 24;
+
+    styles [
+      "heading",
+    ]
+  }
+
+  Gtk.Label channel {
+    xalign: 0;
+    ellipsize: end;
+    max-width-chars: 24;
+
+    styles [
+      "dim-label",
+      "caption",
+    ]
+  }
+
+  Gtk.Label meta {
+    xalign: 0;
+    ellipsize: end;
+    max-width-chars: 24;
+
+    styles [
+      "dim-label",
+      "caption",
+    ]
+  }
+}

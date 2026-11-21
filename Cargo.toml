@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+
+[package]
+name = "flaneur"
+description = "Flâneur for GNOME: a fast, open, multi-service video client."
+version = "0.1.0"
+edition = "2024"
+license = "AGPL-3.0-or-later"
+repository = "https://github.com/flaneur-app/app-gnome"
+homepage = "https://flaneur.baxyz.dev"
+rust-version = "1.100"
+publish = false
+
+[features]
+# A built-in fake service with a few items, to exercise the video grid before real connectors.
+demo = ["dep:async-trait"]
+
+[dependencies]
+async-trait = { version = "0.1.92", optional = true }
+flaneur-model = { git = "https://github.com/flaneur-app/core", branch = "feat/core-structure" }
+flaneur-connector = { git = "https://github.com/flaneur-app/core", branch = "feat/core-structure" }
+flaneur-vm = { git = "https://github.com/flaneur-app/core", branch = "feat/core-structure" }
+
+# Native builds target GTK 4.18 and libadwaita 1.7 (Debian trixie); the Flatpak runtime is newer.
+adw = { package = "libadwaita", version = "0.9.2", features = ["v1_7"] }
+gtk = { package = "gtk4", version = "0.11.5", features = ["v4_18"] }
+gst = { package = "gstreamer", version = "0.25.4", features = ["v1_24"] }
+tokio = { version = "1.54.1", features = ["rt-multi-thread", "sync", "time"] }
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+url = "2.5.9"
+
+[dev-dependencies]
+async-trait = "0.1.92"
+
+[build-dependencies]
+glib-build-tools = "0.22"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"
