@@ -1,4 +1,4 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 # Project names that doc comments use as plain words; ".." keeps clippy's defaults.
-doc-valid-idents = ["GStreamer", "GObject", "GResource", "GtkBuilder", "libadwaita", ".."]
+doc-valid-idents = ["GStreamer", "GObject", "GResource", "GtkBuilder", "libadwaita", "YouTube", "HiDPI", ".."]
