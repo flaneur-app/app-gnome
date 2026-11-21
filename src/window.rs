@@ -195,20 +195,12 @@ impl FlaneurWindow {
         self.imp().toast_overlay.add_toast(adw::Toast::new(message));
     }
 
-    /// Resolves an item's streams with its connector, then plays it.
+    /// Resolves an item's streams with its connector (following handoffs), then plays it.
     fn play_item(&self, item: &Item) {
-        let Some(connector) = self
-            .imp()
-            .registry
-            .get()
-            .and_then(|r| r.get(&item.r#ref.service))
-            .cloned()
-        else {
-            self.toast("The service of this item is not available");
+        let Some(registry) = self.imp().registry.get().cloned() else {
             return;
         };
-        let item_ref = item.r#ref.clone();
-        let task = runtime::spawn(async move { connector.player().resolve(&item_ref).await });
+        let task = runtime::spawn(crate::services::resolve(registry, item.r#ref.clone()));
         glib::spawn_future_local(glib::clone!(
             #[weak(rename_to = window)]
             self,
@@ -232,15 +224,19 @@ impl FlaneurWindow {
             }
         });
         match select_streams(playable, prefs) {
-            Some(selection) => self.play(&Media::from(selection), &playable.item.title),
+            Some(selection) => self.play(
+                &Media::from(selection),
+                &playable.headers,
+                &playable.item.title,
+            ),
             None => self.toast("This video has no stream Flâneur can play"),
         }
     }
 
-    /// Opens the player on a media.
-    pub fn play(&self, media: &Media, title: &str) {
+    /// Opens the player on a media, sending `headers` with every HTTP request for it.
+    pub fn play(&self, media: &Media, headers: &[(String, String)], title: &str) {
         let imp = self.imp();
-        imp.player_page.load(media, title);
+        imp.player_page.load(media, headers, title);
         let player: &adw::NavigationPage = imp.player_page.upcast_ref();
         if imp.navigation.visible_page().as_ref() != Some(player) {
             imp.navigation.push(player);
