@@ -3,7 +3,9 @@
 #
 # flatpak-builder runs on the runner itself, not in the flathub-infra container: inside that
 # container, installing or updating a runtime fails with "Invalid cross-device link" (overlayfs
-# refuses the directory renames OSTree does; flatpak/flatpak-github-actions#267).
+# refuses the directory renames OSTree does; flatpak/flatpak-github-actions#267). It runs as the
+# org.flatpak.Builder Flatpak, whose appstream and elfutils match the GNOME runtime, unlike
+# Ubuntu's packages.
 name: Flatpak
 
 on:
@@ -28,10 +30,11 @@ jobs:
       - name: Install flatpak-builder
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq --no-install-recommends flatpak flatpak-builder elfutils
+          sudo apt-get install -y -qq --no-install-recommends flatpak
           # bubblewrap needs unprivileged user namespaces, which Ubuntu's AppArmor restricts.
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak install --user --noninteractive -y flathub org.flatpak.Builder
       - uses: actions/cache@v6
         with:
           path: .flatpak-builder
@@ -39,7 +42,8 @@ jobs:
           restore-keys: flatpak-builder-
       - name: Build
         run: >
-          flatpak-builder --user --install-deps-from=flathub --force-clean --disable-rofiles-fuse
+          flatpak run org.flatpak.Builder --user --install-deps-from=flathub --force-clean
+          --disable-rofiles-fuse
           --repo=repo --default-branch=master build-dir "$MANIFEST"
       - name: Bundle
         run: >
