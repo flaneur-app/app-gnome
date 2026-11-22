@@ -28,7 +28,7 @@ jobs:
       - name: Install flatpak-builder
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq --no-install-recommends flatpak flatpak-builder
+          sudo apt-get install -y -qq --no-install-recommends flatpak flatpak-builder elfutils
           # bubblewrap needs unprivileged user namespaces, which Ubuntu's AppArmor restricts.
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
