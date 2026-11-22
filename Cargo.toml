@@ -17,13 +17,13 @@ demo = ["dep:async-trait"]
 
 [dependencies]
 async-trait = { version = "0.1.92", optional = true }
-flaneur-model = { git = "https://github.com/flaneur-app/core", branch = "feat/core-structure" }
-flaneur-connector = { git = "https://github.com/flaneur-app/core", branch = "feat/core-structure" }
-flaneur-vm = { git = "https://github.com/flaneur-app/core", branch = "feat/core-structure" }
-flaneur-store = { git = "https://github.com/flaneur-app/core", branch = "feat/core-structure" }
-flaneur-connector-youtube = { git = "https://github.com/flaneur-app/connector-youtube", branch = "feat/youtube-connector" }
-flaneur-connector-odysee = { git = "https://github.com/flaneur-app/connector-odysee", branch = "feat/odysee-connector" }
-flaneur-connector-rss = { git = "https://github.com/flaneur-app/connector-rss", branch = "feat/rss-connector" }
+flaneur-model = { git = "https://github.com/flaneur-app/core" }
+flaneur-connector = { git = "https://github.com/flaneur-app/core" }
+flaneur-vm = { git = "https://github.com/flaneur-app/core" }
+flaneur-store = { git = "https://github.com/flaneur-app/core" }
+flaneur-connector-youtube = { git = "https://github.com/flaneur-app/connector-youtube" }
+flaneur-connector-odysee = { git = "https://github.com/flaneur-app/connector-odysee" }
+flaneur-connector-rss = { git = "https://github.com/flaneur-app/connector-rss" }
 
 # Native builds target GTK 4.18 and libadwaita 1.7 (Debian trixie); the Flatpak runtime is newer.
 adw = { package = "libadwaita", version = "0.9.2", features = ["v1_7"] }

@@ -689,7 +689,7 @@ dependencies = [
 [[package]]
 name = "flaneur-connector"
 version = "0.0.0"
-source = "git+https://github.com/flaneur-app/core?branch=feat%2Fcore-structure#23d3caa7ebc6d95c40c1239bebf4304a714e70b9"
+source = "git+https://github.com/flaneur-app/core#a64c3f33020ffa4fa87cf296e165808802cdfc4a"
 dependencies = [
  "async-trait",
  "flaneur-model",
@@ -701,7 +701,7 @@ dependencies = [
 [[package]]
 name = "flaneur-connector-odysee"
 version = "0.1.0"
-source = "git+https://github.com/flaneur-app/connector-odysee?branch=feat%2Fodysee-connector#715e6a1b759ebc13fc04d097d8043fcab40602aa"
+source = "git+https://github.com/flaneur-app/connector-odysee#9f5554b6dce7f8466f6e29af40f7050e2a90f421"
 dependencies = [
  "async-trait",
  "flaneur-connector",
@@ -721,7 +721,7 @@ dependencies = [
 [[package]]
 name = "flaneur-connector-rss"
 version = "0.1.0"
-source = "git+https://github.com/flaneur-app/connector-rss?branch=feat%2Frss-connector#c303a800197a5ca134fcc05e12ef12c510627b15"
+source = "git+https://github.com/flaneur-app/connector-rss#389da13c192e15d7068e9ac8323bc599bcf5a9ed"
 dependencies = [
  "async-trait",
  "ego-tree",
@@ -730,6 +730,7 @@ dependencies = [
  "flaneur-model",
  "futures-util",
  "jiff 1.0.1",
+ "percent-encoding",
  "reqwest",
  "rustls",
  "rustls-platform-verifier",
@@ -742,7 +743,7 @@ dependencies = [
 [[package]]
 name = "flaneur-connector-youtube"
 version = "0.0.0"
-source = "git+https://github.com/flaneur-app/connector-youtube?branch=feat%2Fyoutube-connector#bf18c08b736ae1d1e19f5b483ca4dc6ce3866b13"
+source = "git+https://github.com/flaneur-app/connector-youtube#b7c5a3f7988597d74d1f3b14ae9c06d27165b6a2"
 dependencies = [
  "async-trait",
  "data-encoding",
@@ -761,7 +762,7 @@ dependencies = [
 [[package]]
 name = "flaneur-model"
 version = "0.0.0"
-source = "git+https://github.com/flaneur-app/core?branch=feat%2Fcore-structure#23d3caa7ebc6d95c40c1239bebf4304a714e70b9"
+source = "git+https://github.com/flaneur-app/core#a64c3f33020ffa4fa87cf296e165808802cdfc4a"
 dependencies = [
  "serde",
  "url",
@@ -770,7 +771,7 @@ dependencies = [
 [[package]]
 name = "flaneur-store"
 version = "0.0.0"
-source = "git+https://github.com/flaneur-app/core?branch=feat%2Fcore-structure#23d3caa7ebc6d95c40c1239bebf4304a714e70b9"
+source = "git+https://github.com/flaneur-app/core#a64c3f33020ffa4fa87cf296e165808802cdfc4a"
 dependencies = [
  "flaneur-model",
  "rusqlite",
@@ -782,7 +783,7 @@ dependencies = [
 [[package]]
 name = "flaneur-vm"
 version = "0.0.0"
-source = "git+https://github.com/flaneur-app/core?branch=feat%2Fcore-structure#23d3caa7ebc6d95c40c1239bebf4304a714e70b9"
+source = "git+https://github.com/flaneur-app/core#a64c3f33020ffa4fa87cf296e165808802cdfc4a"
 dependencies = [
  "flaneur-connector",
  "flaneur-model",
