@@ -21,6 +21,15 @@ jobs:
       options: --privileged
     steps:
       - uses: actions/checkout@v7
+      # The image ships the GNOME runtimes preinstalled. Once Flathub publishes a newer build of
+      # them, flatpak-builder updates them in place, and that update fails inside the container
+      # with "Invalid cross-device link" (flatpak/flatpak-github-actions#267). Removing them makes
+      # flatpak-builder install fresh copies into the user installation instead.
+      - name: Replace the preinstalled runtimes with fresh ones
+        run: |
+          flatpak list --runtime --columns=installation,application,branch || true
+          flatpak uninstall --system --all --noninteractive -y || true
+          flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
       - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           manifest-path: build-aux/dev.baxyz.Flaneur.Devel.yml
