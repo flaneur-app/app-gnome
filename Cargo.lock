@@ -743,7 +743,7 @@ dependencies = [
 [[package]]
 name = "flaneur-connector-youtube"
 version = "0.0.0"
-source = "git+https://github.com/flaneur-app/connector-youtube#b7c5a3f7988597d74d1f3b14ae9c06d27165b6a2"
+source = "git+https://github.com/flaneur-app/connector-youtube#4e0f3d18abd9b2df7bd2d0845e90ef1ebb55c3f5"
 dependencies = [
  "async-trait",
  "data-encoding",
