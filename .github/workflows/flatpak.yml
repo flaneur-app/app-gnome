@@ -35,6 +35,13 @@ jobs:
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
           flatpak install --user --noninteractive -y flathub org.flatpak.Builder
+      # Installed with the host's flatpak: org.flatpak.Builder installs dependencies through D-Bus,
+      # which a CI runner does not have. The rust-stable branch follows the freedesktop base of
+      # the GNOME runtime (GNOME 51 is built on freedesktop 26.08).
+      - name: Install the runtime, SDK and Rust extension
+        run: >
+          flatpak install --user --noninteractive -y flathub
+          org.gnome.Platform//51 org.gnome.Sdk//51 org.freedesktop.Sdk.Extension.rust-stable//26.08
       - uses: actions/cache@v6
         with:
           path: .flatpak-builder
@@ -42,8 +49,7 @@ jobs:
           restore-keys: flatpak-builder-
       - name: Build
         run: >
-          flatpak run org.flatpak.Builder --user --install-deps-from=flathub --force-clean
-          --disable-rofiles-fuse
+          flatpak run org.flatpak.Builder --user --force-clean --disable-rofiles-fuse
           --repo=repo --default-branch=master build-dir "$MANIFEST"
       - name: Bundle
         run: >
