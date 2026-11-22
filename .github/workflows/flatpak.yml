@@ -1,5 +1,9 @@
 # Builds the development Flatpak and uploads the bundle as the `flaneur-x86_64` artifact.
 # A workflow of its own, so it runs whatever happens to the shared Rust workflow.
+#
+# flatpak-builder runs on the runner itself, not in the flathub-infra container: inside that
+# container, installing or updating a runtime fails with "Invalid cross-device link" (overlayfs
+# refuses the directory renames OSTree does; flatpak/flatpak-github-actions#267).
 name: Flatpak
 
 on:
@@ -11,28 +15,38 @@ on:
 permissions:
   contents: read
 
+env:
+  MANIFEST: build-aux/dev.baxyz.Flaneur.Devel.yml
+  APP_ID: dev.baxyz.Flaneur.Devel
+
 jobs:
   flatpak:
     name: Flatpak
-    runs-on: ubuntu-latest
-    # flatpak-builder needs user namespaces for bubblewrap, hence the privileged container.
-    container:
-      image: ghcr.io/flathub-infra/flatpak-github-actions:gnome-51
-      options: --privileged
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
-      # The image ships the GNOME runtimes preinstalled. Once Flathub publishes a newer build of
-      # them, flatpak-builder updates them in place, and that update fails inside the container
-      # with "Invalid cross-device link" (flatpak/flatpak-github-actions#267). Removing them makes
-      # flatpak-builder install fresh copies into the user installation instead.
-      - name: Replace the preinstalled runtimes with fresh ones
+      - name: Install flatpak-builder
         run: |
-          flatpak list --runtime --columns=installation,application,branch || true
-          flatpak uninstall --system --all --noninteractive -y || true
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq --no-install-recommends flatpak flatpak-builder
+          # bubblewrap needs unprivileged user namespaces, which Ubuntu's AppArmor restricts.
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+      - uses: actions/cache@v6
         with:
-          manifest-path: build-aux/dev.baxyz.Flaneur.Devel.yml
-          bundle: flaneur.flatpak
-          artifact-name: flaneur-x86_64
-          cache-key: flatpak-builder-${{ hashFiles('build-aux/dev.baxyz.Flaneur.Devel.yml', 'Cargo.lock') }}
+          path: .flatpak-builder
+          key: flatpak-builder-${{ hashFiles('build-aux/*.yml', 'Cargo.lock') }}
+          restore-keys: flatpak-builder-
+      - name: Build
+        run: >
+          flatpak-builder --user --install-deps-from=flathub --force-clean --disable-rofiles-fuse
+          --repo=repo --default-branch=master build-dir "$MANIFEST"
+      - name: Bundle
+        run: >
+          flatpak build-bundle --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo
+          repo flaneur.flatpak "$APP_ID" master
+      - uses: actions/upload-artifact@v7
+        with:
+          name: flaneur-x86_64
+          path: flaneur.flatpak
+          if-no-files-found: error
