@@ -14,6 +14,10 @@ sdk: org.gnome.Sdk
 sdk-extensions:
   - org.freedesktop.Sdk.Extension.rust-stable
 command: flaneur
+# The composed AppStream catalog only feeds software centers, which never see a development
+# bundle; skipping it keeps the build independent of the host's appstream version (Ubuntu
+# 24.04's fails on GNOME 51 metadata). `appstreamcli validate` in CI still checks the file.
+appstream-compose: false
 finish-args:
   # Video services.
   - --share=network
